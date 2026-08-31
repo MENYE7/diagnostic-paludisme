@@ -3,15 +3,21 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 
-model = tf.keras.models.load_model("palu_best.keras")
+# Charger TFLite (beaucoup plus léger que Keras)
+interpreter = tf.lite.Interpreter(model_path="palu_model.tflite")
+interpreter.allocate_tensors()
+input_details  = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
 def predict(img):
     if img is None:
         return "⚠️ Veuillez charger une image"
-    img_resized = img.resize((128, 128))
-    arr = np.array(img_resized).astype(np.float32)
+    img = img.resize((128, 128))
+    arr = np.array(img).astype(np.float32)
     arr = np.expand_dims(arr, 0)
-    score = float(model.predict(arr, verbose=0)[0][0])
+    interpreter.set_tensor(input_details[0]["index"], arr)
+    interpreter.invoke()
+    score = float(interpreter.get_tensor(output_details[0]["index"])[0][0])
     if score > 0.5:
         return f"🔴 CELLULE PARASITÉE\nConfiance : {score*100:.1f}%\n\n➡️ Faire confirmer par goutte épaisse ou TDR."
     else:
