@@ -1,4 +1,4 @@
-tensorflow==2.15.0
+tflite-runtime==2.14.0
 gradio==3.50.2
 huggingface_hub==0.20.3
 numpy
